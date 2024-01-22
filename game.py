@@ -66,7 +66,7 @@ class Grid():
                 if self.isWallPositionLegal(nextWallPos[0]) and (nextWallPos in possibilities):
                     possibilities.remove(nextWallPos)
         for wall in possibilities.copy():
-            print(wall)
+            #print(wall)
             copyGrid = Grid()
             for w1 in self.wallPositions:
                 copyGrid.placeWall(w1[0], w1[1])
@@ -74,7 +74,7 @@ class Grid():
             goal = copyGrid.findVertice([-player.pnum, -player.pnum])
             currentPosition = copyGrid.findVertice(player.position)
             if not self.BFS(currentPosition, goal, copyGrid.vertices):
-                print("hi")
+                #print("hi")
                 possibilities.remove(wall)
         return possibilities
 
@@ -220,17 +220,33 @@ class Quoridor():
                 self.nonactivePlayer = self.p1
 
     def printBoard(self):
-        print("-------------------")
+        board = []
+        flatline = ["-" for i in range(19)]
+        board.append(flatline)
         for y in range(9):
+            line = []
             for x in range(9):
+                line.append("|")
                 if [x, y] == self.p1.position:
-                    print("|1", end = "")
+                    line.append("1")
                 elif [x, y] == self.p2.position:
-                    print("|2", end = "")
+                    line.append("2")
                 else:
-                    print("| ", end = "")
-            print("|")
-            print("-------------------")
+                    line.append(" ")
+            line.append("|")
+            board.append(line)
+            board.append(flatline.copy())
+        for wall in self.grid.wallPositions:
+            x, y = wall[0]
+            if wall[1] == "v":
+                board[(y+1)*2-1][(x+1)*2] = '#'
+                board[(y+2)*2-1][(x+1)*2] = '#'
+            else:
+                board[(y+1)*2][(x+1)*2-1] = '#'
+                board[(y+1)*2][(x+2)*2-1] = '#'
+        for l in board:
+            string = "".join(l)
+            print(string)
 
     def play(self):
         self.printBoard()

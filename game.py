@@ -1,4 +1,6 @@
 import copy
+import networkx as nx
+import matplotlib.pyplot as plt
 moveDict = {"d": [0, 1], "u": [0, -1], "l": [-1, 0], "r": [1, 0]}
 
 class Vertice():
@@ -13,24 +15,32 @@ class Edge():
 
 class Grid():
     def __init__(self):
+        self.G = nx.Graph()
         self.vertices = [Vertice([e1, e2]) for e1 in range(9) for e2 in range(9)]
+        for v in self.vertices:
+            self.G.add_node(v)
         self.wallPositions = []
         for v1 in self.vertices:
             for v2 in self.vertices:
                 if (v1 != v2 and v1 not in v2.neighbors) and abs(v1.position[0] - v2.position[0]) + abs(v1.position[1] - v2.position[1]) == 1:
                     v1.neighbors.append(v2)
                     v2.neighbors.append(v1)
-        p1Goal = Vertice([-1, -1])
-        p2Goal = Vertice([-2, -2])
-        self.vertices.append(p1Goal)
-        self.vertices.append(p2Goal)
+                    self.G.add_edge(v1, v2)
+        self.p1Goal = Vertice([-1, -1])
+        self.G.add_node(self.p1Goal)
+        self.p2Goal = Vertice([-2, -2])
+        self.G.add_node(self.p2Goal)
+        self.vertices.append(self.p1Goal)
+        self.vertices.append(self.p2Goal)
         for vertice in self.vertices:
             if vertice.position[1] == 0:
-                vertice.neighbors.append(p1Goal)
-                p1Goal.neighbors.append(vertice)
+                vertice.neighbors.append(self.p1Goal)
+                self.p1Goal.neighbors.append(vertice)
+                self.G.add_edge(vertice, self.p1Goal)
             if vertice.position[1] == 8:
-                vertice.neighbors.append(p2Goal)
-                p2Goal.neighbors.append(vertice)
+                vertice.neighbors.append(self.p2Goal)
+                self.p2Goal.neighbors.append(vertice)
+                self.G.add_edge(vertice, self.p2Goal)
 
     def findVertice(self, position):
         return self.findVerticeInList(position, self.vertices)
@@ -50,6 +60,7 @@ class Grid():
         for vpair in cutVertices:
             vpair[0].neighbors.remove(vpair[1])
             vpair[1].neighbors.remove(vpair[0])
+            self.G.remove_edge(vpair[0], vpair[1])
         self.wallPositions.append([position, orientation])
 
     def possibleWallPlacements(self, player):
@@ -71,11 +82,14 @@ class Grid():
             for w1 in self.wallPositions:
                 copyGrid.placeWall(w1[0], w1[1])
             copyGrid.placeWall(wall[0], wall[1])
-            goal = copyGrid.findVertice([-player.pnum, -player.pnum])
-            currentPosition = copyGrid.findVertice(player.position)
-            if not self.BFS(currentPosition, goal, copyGrid.vertices):
-                #print("hi")
-                possibilities.remove(wall)
+            for p in player:
+                print(p.pnum)
+                goal = copyGrid.findVertice([-p.pnum, -p.pnum])
+                currentPosition = copyGrid.findVertice(p.position)
+                print(currentPosition.position)
+                if not self.BFS(currentPosition, goal, copyGrid.vertices):
+                    print("hi")
+                    possibilities.remove(wall)
         return possibilities
 
     def isWallPositionLegal(self, newPosition):
@@ -91,13 +105,22 @@ class Grid():
         queue = [vertice1]
         while len(queue) > 0:
             currentVertice = queue.pop(0)
+            if currentVertice.position == [-1,-1] or currentVertice.position == [-2,-2]:
+                print(currentVertice.position)
             for otherVertice in currentVertice.neighbors:
                 if otherVertice == vertice2:
+                    print("found")
                     return True
-                if otherVertice.marked == False:
+                if ((otherVertice.marked == False) and otherVertice != self.p1Goal) and otherVertice != self.p2Goal:
                     queue.append(otherVertice)
                     otherVertice.marked = True
+        print("bruh")
         return False
+    
+    def showGraph(self):
+        pos = {node:node.position for node in self.vertices}
+        nx.draw(self.G, pos)
+        plt.show()
     
     
 class Piece():
@@ -189,7 +212,7 @@ class Quoridor():
                     newWallPos = [[int(choice.split(",")[0]), int(choice.split(",")[1][0])], choice.split(",")[1][1]]
                     #print(self.currentPlayer.wallsLeft)
                     #print(self.grid.possibleWallPlacements())
-                    if self.currentPlayer.wallsLeft > 0 and (newWallPos in self.grid.possibleWallPlacements(self.currentPlayer)):
+                    if self.currentPlayer.wallsLeft > 0 and (newWallPos in self.grid.possibleWallPlacements([self.currentPlayer, self.nonactivePlayer])):
                         self.grid.placeWall(newWallPos[0], newWallPos[1])
                         self.currentPlayer.wallsLeft = self.currentPlayer.wallsLeft - 1
                         return
@@ -207,6 +230,7 @@ class Quoridor():
     
     def update(self):
         self.printBoard()
+        self.grid.showGraph()
         if self.p1.position[1] == 0:
             self.game_over = True
         elif self.p2.position[1] == 8:
@@ -261,5 +285,6 @@ class Quoridor():
 
 
 game = Quoridor()
+#game.grid.showGraph()
 # game.grid.wallPositions = [[[1, 1], "v"], [[0, 0], "h"]]
 game.play()

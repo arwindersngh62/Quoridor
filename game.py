@@ -77,18 +77,14 @@ class Grid():
                 if self.isWallPositionLegal(nextWallPos[0]) and (nextWallPos in possibilities):
                     possibilities.remove(nextWallPos)
         for wall in possibilities.copy():
-            #print(wall)
             copyGrid = Grid()
             for w1 in self.wallPositions:
                 copyGrid.placeWall(w1[0], w1[1])
             copyGrid.placeWall(wall[0], wall[1])
             for p in player:
-                print(p.pnum)
                 goal = copyGrid.findVertice([-p.pnum, -p.pnum])
                 currentPosition = copyGrid.findVertice(p.position)
-                print(currentPosition.position)
                 if not self.BFS(currentPosition, goal, copyGrid.vertices):
-                    print("hi")
                     possibilities.remove(wall)
         return possibilities
 
@@ -105,16 +101,12 @@ class Grid():
         queue = [vertice1]
         while len(queue) > 0:
             currentVertice = queue.pop(0)
-            if currentVertice.position == [-1,-1] or currentVertice.position == [-2,-2]:
-                print(currentVertice.position)
             for otherVertice in currentVertice.neighbors:
                 if otherVertice == vertice2:
-                    print("found")
                     return True
-                if ((otherVertice.marked == False) and otherVertice != self.p1Goal) and otherVertice != self.p2Goal:
+                if (otherVertice.marked == False) and otherVertice.position[0] >= 0:
                     queue.append(otherVertice)
                     otherVertice.marked = True
-        print("bruh")
         return False
     
     def showGraph(self):
@@ -230,7 +222,7 @@ class Quoridor():
     
     def update(self):
         self.printBoard()
-        self.grid.showGraph()
+        #self.grid.showGraph()
         if self.p1.position[1] == 0:
             self.game_over = True
         elif self.p2.position[1] == 8:
@@ -262,6 +254,7 @@ class Quoridor():
             board.append(flatline.copy())
         for wall in self.grid.wallPositions:
             x, y = wall[0]
+            board[(y+1)*2][(x+1)*2] = '#'
             if wall[1] == "v":
                 board[(y+1)*2-1][(x+1)*2] = '#'
                 board[(y+2)*2-1][(x+1)*2] = '#'

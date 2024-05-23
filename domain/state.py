@@ -19,6 +19,26 @@ class QuoridorState:
         self.parent = parent
         self.path_cost = 0 if parent is None else parent.path_cost + 1
 
+    def free_at(self, position):
+        for pos2, char in self.agent_positions:
+            if pos2 == position:
+                return False
+        return True
+    
+    def not_blocked_by_wall(self, position, dir):
+        x, y = position
+        for wall_pos, orientation in self.wall_positions:
+            if orientation == "v":
+                if dir == "e" and wall_pos[0] == x and (wall_pos[1] == y or wall_pos[1] == y - 1):
+                    return False
+                if dir == "w" and wall_pos[0] == x - 1 and (wall_pos[1] == y or wall_pos[1] == y - 1):
+                    return False
+            if dir == "n" and wall_pos[1] == y - 1 and (wall_pos[0] == x or wall_pos[0] == x - 1):
+                return False
+            if dir == "s" and wall_pos[1] == y and (wall_pos[0] == x or wall_pos[0] == x - 1):
+                return False
+        return True
+
     def __repr__(self) -> str:
         board = []
         board.append(f"{self.agent_to_move}|({self.walls_left})")

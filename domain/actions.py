@@ -15,6 +15,8 @@ direction_deltas = {
     'W': (0, -1),
 }
 
+cutDict = {"v": [(1, 0), (0, 1)], "h": [(0, 1), (1, 0)]}
+
 class MoveAction:
 
     def __init__(self, agent_direction):
@@ -105,7 +107,46 @@ class JumpSideAction:
     def __repr__(self):
         return self.name
     
+class WallAction:
+
+    def __init__(self, position: tuple[int, int], orientation: str):
+        self.position = position
+        self.orientation = orientation
+        self.name = "Wall(%i, %i, %s)" % (position[0], position[1], orientation)
+
+    def is_applicable(self, agent_index: int,  state: q_state.QuoridorState) -> bool:
+        if state.walls_left[agent_index] < 1:
+            return False
+        if self.position[0] < 0 or self.position[0] > 7 or self.position[1] < 0 or self.position[1] > 7:
+            return False
+        if state.wall_at(self.position):
+            return False
+        if self.orientation == "v":
+            for dir in ['N', 'S']:
+                if state.wall_and_orientation_at(pos_add(self.position, direction_deltas[dir]), "v"):
+                    return False
+        for dir in ['E', 'W']:
+            if state.wall_and_orientation_at(pos_add(self.position, direction_deltas[dir]), "h"):
+                return False
+        if state.wall_blocks(self.position, self.orientation):
+            return False
+        return True
+
+    def result(self, agent_index: int, state: q_state.QuoridorState):
+        state.walls_left[agent_index] -= 1
+        state.wall_positions.append(self.position, self.orientation)
+        cutVertices = [[state.findVertice(self.position), state.findVertice(pos_add(self.position, cutDict[self.orientation][0]))], [state.findVerticeInList(pos_add(self.position, (1,1))), state.findVerticeInList(pos_add(self.position, cutDict[self.orientation][1]))]]
+        for vpair in cutVertices:
+            vpair[0].neighbors.remove(vpair[1])
+            vpair[1].neighbors.remove(vpair[0])
+            state.graph.remove_edge(vpair[0], vpair[1])
+
+    def __repr__(self):
+        return self.name
+    
 # An action library for the multi agent pathfinding
+WALL_ACTIONS = [WallAction((i1, i2), o) for i1 in range(8) for i2 in range(8) for o in ["v", "h"]]
+
 DEFAULT_QUORIDOR_ACTION_LIBRARY = [
     MoveAction("N"),
     MoveAction("S"),
@@ -123,4 +164,4 @@ DEFAULT_QUORIDOR_ACTION_LIBRARY = [
     JumpSideAction("E", "S"),
     JumpSideAction("W", "N"),
     JumpSideAction("W", "S"),
-]
+] + WALL_ACTIONS

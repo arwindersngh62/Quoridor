@@ -1,8 +1,6 @@
-
-
+import networkx as nx
 
 class QuoridorState:
-
 
     def __init__(
         self,
@@ -10,12 +8,14 @@ class QuoridorState:
         wall_positions: list[tuple[tuple[int, int], str]],
         agent_to_move: str,
         walls_left: tuple[int, int],
+        nxgraph: nx.Graph,
         parent = None,
     ):
         self.agent_positions = agent_positions
         self.wall_positions = wall_positions
         self.agent_to_move = agent_to_move
         self.walls_left = walls_left
+        self.graph = nxgraph
         self.parent = parent
         self.path_cost = 0 if parent is None else parent.path_cost + 1
 
@@ -39,6 +39,21 @@ class QuoridorState:
                 return False
         return True
 
+    def wall_at(self, position):
+        for pos, _ in self.wall_positions:
+            if pos == position:
+                return True
+        return False
+    
+    def wall_and_orientation_at(self, position, orientation):
+        for pos, ori in self.wall_positions:
+            if pos == position and ori == orientation:
+                return True
+        return False
+    
+    def wall_blocks(self, position, orientation):
+        return False
+    
     def __repr__(self) -> str:
         board = []
         board.append(f"{self.agent_to_move}|({self.walls_left})")

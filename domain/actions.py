@@ -135,10 +135,8 @@ class WallAction:
     def result(self, agent_index: int, state: q_state.QuoridorState):
         state.walls_left[agent_index] -= 1
         state.wall_positions.append(self.position, self.orientation)
-        cutVertices = [[state.findVertice(self.position), state.findVertice(pos_add(self.position, cutDict[self.orientation][0]))], [state.findVerticeInList(pos_add(self.position, (1,1))), state.findVerticeInList(pos_add(self.position, cutDict[self.orientation][1]))]]
+        cutVertices = [[state.findVertice(self.position), state.findVertice(pos_add(self.position, cutDict[self.orientation][0]))], [state.findVertice(pos_add(self.position, (1,1))), state.findVertice(pos_add(self.position, cutDict[self.orientation][1]))]]
         for vpair in cutVertices:
-            vpair[0].neighbors.remove(vpair[1])
-            vpair[1].neighbors.remove(vpair[0])
             state.graph.remove_edge(vpair[0], vpair[1])
 
     def __repr__(self):

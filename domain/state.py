@@ -1,4 +1,12 @@
 import networkx as nx
+cutDict = {"v": [(1, 0), (0, 1)], "h": [(0, 1), (1, 0)]}
+
+def pos_add(x: tuple[int, int], y: tuple[int, int]) -> tuple[int, int]:
+    return x[0] + y[0], x[1] + y[1]
+
+
+def pos_sub(x: tuple[int, int], y: tuple[int, int]) -> tuple[int, int]:
+    return x[0] - y[0], x[1] - y[1]
 
 class QuoridorState:
 
@@ -51,7 +59,25 @@ class QuoridorState:
                 return True
         return False
     
+    def findVertice(self, position):
+        return [x for x,y in self.graph.nodes(data=True) if y['pos'] == position][0]
+
     def wall_blocks(self, position, orientation):
+        cutVertices = [[self.findVertice(position), self.findVertice(pos_add(position, cutDict[orientation][0]))], [self.findVertice(pos_add(position, (1,1))), self.findVertice(pos_add(position, cutDict[orientation][1]))]]
+        for vpair in cutVertices:
+            self.graph.remove_edge(vpair[0], vpair[1])
+        p1_node = self.findVertice(self.agent_positions[0][0])
+        p2_node = self.findVertice(self.agent_positions[1][0])
+        p1_goal = self.findVertice((-1, -1))
+        p2_goal = self.findVertice((-2, -2))
+        if not nx.has_path(self.graph, p1_node, p1_goal):
+            for vpair in cutVertices:
+                self.graph.add_edge(vpair[0], vpair[1])
+            return True
+        if not nx.has_path(self.graph, p2_node, p2_goal):
+            for vpair in cutVertices:
+                self.graph.add_edge(vpair[0], vpair[1])
+            return True
         return False
     
     def __repr__(self) -> str:

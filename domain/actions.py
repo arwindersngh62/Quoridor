@@ -1,5 +1,6 @@
-
+from __future__ import annotations
 import domain.state as q_state
+from typing import Union, Tuple
 
 def pos_add(x: tuple[int, int], y: tuple[int, int]) -> tuple[int, int]:
     return x[0] + y[0], x[1] + y[1]
@@ -9,10 +10,10 @@ def pos_sub(x: tuple[int, int], y: tuple[int, int]) -> tuple[int, int]:
     return x[0] - y[0], x[1] - y[1]
 
 direction_deltas = {
-    'N': (-1, 0),
-    'S': (1, 0),
-    'E': (0, 1),
-    'W': (0, -1),
+    'N': (0, -1),
+    'S': (0, 1),
+    'E': (1, 0),
+    'W': (-1, 0),
 }
 
 cutDict = {"v": [(1, 0), (0, 1)], "h": [(0, 1), (1, 0)]}
@@ -39,9 +40,23 @@ class MoveAction:
         current_agent_position, agent_char = state.agent_positions[agent_index]
         new_agent_position = self.calculate_positions(current_agent_position)
         state.agent_positions[agent_index] = (new_agent_position, agent_char)
+        self.pass_turn(state)
+
+    def pass_turn(self, state: q_state.QuoridorState):
+        state.agent_to_move = int(not bool(state.agent_to_move))
 
     def __repr__(self):
         return self.name
+    
+    def __eq__(self, other) -> bool:
+        """
+        Notice that we here only compare the agent positions and box positions, but ignore all other fields.
+        That means that two states with identical positions but e.g. different parent will be seen as equal.
+        """
+        if isinstance(other, self.__class__):
+            return self.name == other.name
+        else:
+            return False
     
 class JumpStraightAction:
 
@@ -70,9 +85,23 @@ class JumpStraightAction:
         current_agent_position, agent_char = state.agent_positions[agent_index]
         new_agent_position = self.calculate_positions(current_agent_position)[1]
         state.agent_positions[agent_index] = (new_agent_position, agent_char)
+        self.pass_turn(state)
+
+    def pass_turn(self, state: q_state.QuoridorState):
+        state.agent_to_move = int(not bool(state.agent_to_move))
 
     def __repr__(self):
         return self.name
+    
+    def __eq__(self, other) -> bool:
+        """
+        Notice that we here only compare the agent positions and box positions, but ignore all other fields.
+        That means that two states with identical positions but e.g. different parent will be seen as equal.
+        """
+        if isinstance(other, self.__class__):
+            return self.name == other.name
+        else:
+            return False
     
 class JumpSideAction:
 
@@ -103,9 +132,23 @@ class JumpSideAction:
         current_agent_position, agent_char = state.agent_positions[agent_index]
         new_agent_position = self.calculate_positions(current_agent_position)[1]
         state.agent_positions[agent_index] = (new_agent_position, agent_char)
+        self.pass_turn(state)
+
+    def pass_turn(self, state: q_state.QuoridorState):
+        state.agent_to_move = int(not bool(state.agent_to_move))
 
     def __repr__(self):
         return self.name
+    
+    def __eq__(self, other) -> bool:
+        """
+        Notice that we here only compare the agent positions and box positions, but ignore all other fields.
+        That means that two states with identical positions but e.g. different parent will be seen as equal.
+        """
+        if isinstance(other, self.__class__):
+            return self.name == other.name
+        else:
+            return False
     
 class WallAction:
 
@@ -134,14 +177,30 @@ class WallAction:
 
     def result(self, agent_index: int, state: q_state.QuoridorState):
         state.walls_left[agent_index] -= 1
-        state.wall_positions.append(self.position, self.orientation)
+        state.wall_positions.append((self.position, self.orientation))
         cutVertices = [[state.findVertice(self.position), state.findVertice(pos_add(self.position, cutDict[self.orientation][0]))], [state.findVertice(pos_add(self.position, (1,1))), state.findVertice(pos_add(self.position, cutDict[self.orientation][1]))]]
         for vpair in cutVertices:
             state.graph.remove_edge(vpair[0], vpair[1])
+        self.pass_turn(state)
+
+    def pass_turn(self, state: q_state.QuoridorState):
+        state.agent_to_move = int(not bool(state.agent_to_move))
 
     def __repr__(self):
         return self.name
     
+    def __eq__(self, other) -> bool:
+        """
+        Notice that we here only compare the agent positions and box positions, but ignore all other fields.
+        That means that two states with identical positions but e.g. different parent will be seen as equal.
+        """
+        if isinstance(other, self.__class__):
+            return self.name == other.name
+        else:
+            return False
+    
+
+AnyAction = Union[MoveAction, JumpStraightAction, JumpSideAction, WallAction]
 # An action library for the multi agent pathfinding
 WALL_ACTIONS = [WallAction((i1, i2), o) for i1 in range(8) for i2 in range(8) for o in ["v", "h"]]
 

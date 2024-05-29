@@ -22,14 +22,18 @@ current_state = initial_state
 
 while True:
     print(current_state)
-    print(current_state.get_applicable_actions(DEFAULT_QUORIDOR_ACTION_LIBRARY))
+    if current_state.is_terminal():
+        winner = current_state.get_winner()
+        print("Player %i has won the game!" % winner)
+        break
+    #print(current_state.get_applicable_actions(DEFAULT_QUORIDOR_ACTION_LIBRARY))
     input_string = input("What is your move?\n")
     action = get_action_from_string(input_string)
     if action == None:
         print("Not legal input")
         continue
     if action not in current_state.get_applicable_actions(DEFAULT_QUORIDOR_ACTION_LIBRARY):
-        print(action)
+        #print(action)
         print("Not legal action")
         continue
     current_state = current_state.result(action)

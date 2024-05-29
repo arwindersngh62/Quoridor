@@ -164,13 +164,14 @@ class WallAction:
             return False
         if state.wall_at(self.position):
             return False
-        if self.orientation == "v":
+        if self.orientation.lower() == "v":
             for dir in ['N', 'S']:
                 if state.wall_and_orientation_at(pos_add(self.position, direction_deltas[dir]), "v"):
                     return False
-        for dir in ['E', 'W']:
-            if state.wall_and_orientation_at(pos_add(self.position, direction_deltas[dir]), "h"):
-                return False
+        if self.orientation.lower() == "h":
+            for dir in ['E', 'W']:
+                if state.wall_and_orientation_at(pos_add(self.position, direction_deltas[dir]), "h"):
+                    return False
         if state.wall_blocks(self.position, self.orientation):
             return False
         return True

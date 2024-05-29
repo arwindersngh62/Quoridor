@@ -63,29 +63,26 @@ class QuoridorState:
         return findVertice(self.graph, position)
 
     def wall_blocks(self, position: tuple[int, int], orientation: str) -> bool:
-        cutVertices = [[self.findVertice(position), self.findVertice(actions.pos_add(position, actions.cutDict[orientation][0]))], [self.findVertice(actions.pos_add(position, (1,1))), self.findVertice(actions.pos_add(position, actions.cutDict[orientation][1]))]]
+        copyGraph = self.graph.copy()
+        cutVertices = [[findVertice(copyGraph, position), findVertice(copyGraph, actions.pos_add(position, actions.cutDict[orientation][0]))], [findVertice(copyGraph, actions.pos_add(position, (1,1))), findVertice(copyGraph, actions.pos_add(position, actions.cutDict[orientation][1]))]]
         deleted_edges = False
         for vpair in cutVertices:
-            if self.graph.has_edge(vpair[0], vpair[1]):
+            if copyGraph.has_edge(vpair[0], vpair[1]):
                 deleted_edges = True
-                self.graph.remove_edge(vpair[0], vpair[1])
-        p1_node = self.findVertice(self.agent_positions[0][0])
-        p2_node = self.findVertice(self.agent_positions[1][0])
-        p1_goal = self.findVertice((-1, -1))
-        p2_goal = self.findVertice((-2, -2))
-        if not nx.has_path(self.graph, p1_node, p1_goal):
-            if deleted_edges:
-                for vpair in cutVertices:
-                    self.graph.add_edge(vpair[0], vpair[1])
+                copyGraph.remove_edge(vpair[0], vpair[1])
+        p1_node = findVertice(copyGraph, self.agent_positions[0][0])
+        p2_node = findVertice(copyGraph, self.agent_positions[1][0])
+        p1_goal = findVertice(copyGraph, (-1, -1))
+        p2_goal = findVertice(copyGraph, (-2, -2))
+        copyGraph.remove_node(p2_goal)
+        if not nx.has_path(copyGraph, p1_node, p1_goal):
             return True
-        if not nx.has_path(self.graph, p2_node, p2_goal):
-            if deleted_edges:
-                for vpair in cutVertices:
-                    self.graph.add_edge(vpair[0], vpair[1])
+        copyGraph.add_node(p2_goal, pos = (-2, -2))
+        copyGraph.remove_node(p1_goal)
+        for i in range(9):
+            copyGraph.add_edge(p2_goal, findVertice(copyGraph, (i, 0)))
+        if not nx.has_path(copyGraph, p2_node, p2_goal):
             return True
-        if deleted_edges:
-            for vpair in cutVertices:
-                self.graph.add_edge(vpair[0], vpair[1])
         return False
     
     def result(self, action: actions.AnyAction):
@@ -112,9 +109,22 @@ class QuoridorState:
                 applicable_actions.append(action)
         return applicable_actions
     
+    def is_terminal(self):
+        if self.agent_positions[0][0][1] == 8:
+            return True
+        if self.agent_positions[1][0][1] == 0:
+            return True
+        return False
+    
+    def get_winner(self):
+        if self.agent_positions[0][0][1] == 8:
+            return 1
+        if self.agent_positions[1][0][1] == 0:
+            return 2
+        return None
+    
     def __repr__(self) -> str:
         board = []
-        board.append(f"{self.agent_to_move}|({self.walls_left})")
         flatline = ["-" for i in range(19)]
         board.append(flatline)
         # Add the grid and the players to the list of strings
@@ -141,6 +151,7 @@ class QuoridorState:
             else:
                 board[(y+1)*2][(x+1)*2-1] = '#'
                 board[(y+1)*2][(x+2)*2-1] = '#'
+        board.append(f"{self.agent_to_move}|({self.walls_left})")
         board = [''.join(linei) for linei in board]
         return '\n'.join(board)
 

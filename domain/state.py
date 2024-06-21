@@ -94,6 +94,13 @@ class QuoridorState:
         action.result(self.agent_to_move, new_state)
         return new_state
 
+    def copy(self):
+        """Computes the state resulting from applying a joint action to this state"""
+        new_state = QuoridorState(copy.copy(self.agent_positions), copy.copy(self.wall_positions),
+                                  copy.copy(self.agent_to_move), copy.copy(self.walls_left),
+                                  copy.copy(self.graph), self.action_taken_to_state, self.parent)
+        return new_state
+    
     def is_applicable(self, action: actions.AnyAction) -> bool:
         """Returns whether all individual actions in the joint_action is applicable in this state"""
         if not action.is_applicable(self.agent_to_move, self):

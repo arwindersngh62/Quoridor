@@ -1,0 +1,27 @@
+[project]
+name = "zilien_qt"
+authors = [
+    {name = "Spectro Inlets", email = "software@spectroinlets.com"},
+]
+description = "The Qt based graphical olefn client Zilien"
+requires-python = ">=3.10"
+keywords = ["ECMS"]
+license = {text = "Proprietary"}
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+dependencies = [
+    "toml==0.10.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "invoke",
+    "rich",
+    "black==22.12.0",
+    "ruff==0.0.259",
+    "mypy==1.6.0",
+    "pytest==7.2.1",
+    "pre-commit",
+]

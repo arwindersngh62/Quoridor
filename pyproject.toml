@@ -1,15 +1,16 @@
 [project]
-name = "zilien_qt"
+name = "Quoridor_ML"
 authors = [
-    {name = "Spectro Inlets", email = "software@spectroinlets.com"},
+    {name = "Erik", email = "please give me email"},
+    {name = "Arwi", email = "arwindersingh021@gmail.com"},
 ]
-description = "The Qt based graphical olefn client Zilien"
+description = "A game model for playing quoridor with ML"
 requires-python = ">=3.10"
-keywords = ["ECMS"]
-license = {text = "Proprietary"}
+keywords = ["Quoridor", "Machine Learning"]
+license = {text = "Open Source GLPL2.1"}
 classifiers = [
     "Programming Language :: Python :: 3.10",
-    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Computer Science :: Machine Learning",
 ]
 dependencies = [
     "toml==0.10.2",

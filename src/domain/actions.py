@@ -77,7 +77,7 @@ class JumpStraightAction:
 
     def calculate_positions(
         self, current_agent_position: tuple[int, int]
-    ) -> Tuple[Tuple[int, int], Tuple[int,int]]:
+    ) -> Tuple[Tuple[int, int], Tuple[int, int]]:
         return pos_add(current_agent_position, self.agent_delta_midway), pos_add(
             current_agent_position, self.agent_delta
         )
@@ -139,7 +139,7 @@ class JumpSideAction:
 
     def calculate_positions(
         self, current_agent_position: tuple[int, int]
-    ) -> Tuple[Tuple[int, int],Tuple[int, int]]:
+    ) -> Tuple[Tuple[int, int], Tuple[int, int]]:
         return pos_add(current_agent_position, self.agent_delta_midway), pos_add(
             current_agent_position, self.agent_delta
         )
@@ -227,7 +227,9 @@ class WallAction:
         return True
 
     def result(self, agent_index: int, state: q_state.QuoridorState):
-        state.walls_left[agent_index] -= 1  #NOTE:::: tuple is immutable, this should err if properly implemented
+        state.walls_left[
+            agent_index
+        ] -= 1  # NOTE:::: tuple is immutable, this should err if properly implemented
         state.wall_positions.append((self.position, self.orientation))
         cutVertices = [
             [
@@ -266,7 +268,9 @@ WALL_ACTIONS = [
     WallAction((i1, i2), o) for i1 in range(8) for i2 in range(8) for o in ["v", "h"]
 ]
 
-DEFAULT_QUORIDOR_ACTION_LIBRARY: list[MoveAction | JumpStraightAction | JumpSideAction | WallAction] = [
+DEFAULT_QUORIDOR_ACTION_LIBRARY: list[
+    MoveAction | JumpStraightAction | JumpSideAction | WallAction
+] = [
     MoveAction("N"),
     MoveAction("S"),
     MoveAction("E"),

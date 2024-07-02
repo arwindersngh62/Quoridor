@@ -1,0 +1,12 @@
+name: ci
+run-name : Running CI pipeline
+on: [push]
+jobs:
+  ci_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello there I am going to setup a basic pipeline"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"

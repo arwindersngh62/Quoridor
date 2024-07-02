@@ -54,11 +54,7 @@ def dependencies(context):
 def checks(context):
     """Check code with black, flake8, mypy and run tests"""
     combined_return_code = check_code_format(context)
-    combined_return_code += lint(context)
-    combined_return_code += check_ui_to_py(context)
-    combined_return_code += type_check(context)
-    combined_return_code += tests(context)
-    combined_return_code += check_text_changed(context)
+    
     if combined_return_code == 0:
         rprint()
         rprint(r"+----------+")

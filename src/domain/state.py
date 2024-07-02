@@ -1,7 +1,7 @@
-from __future__ import annotations
 import networkx as nx
 import copy
 import domain.actions as actions
+from typing import Optional, Any
 
 
 def findVertice(graph, position: tuple[int, int]):
@@ -16,8 +16,8 @@ class QuoridorState:
         agent_to_move: int,
         walls_left: tuple[int, int],
         nxgraph: nx.Graph,
-        action: actions.AnyAction = None,
-        parent=None,
+        action: Optional["actions.AnyAction"]= None,
+        parent: Optional[Any] =None,
     ):
         self.agent_positions = agent_positions
         self.wall_positions = wall_positions
@@ -119,7 +119,7 @@ class QuoridorState:
             return True
         return False
 
-    def result(self, action: actions.AnyAction):
+    def result(self, action: "actions.AnyAction") -> "QuoridorState":
         """Computes the state resulting from applying a joint action to this state"""
         new_state = QuoridorState(
             copy.copy(self.agent_positions),
@@ -134,7 +134,7 @@ class QuoridorState:
         action.result(self.agent_to_move, new_state)
         return new_state
 
-    def copy(self):
+    def copy(self) -> "QuoridorState":
         """Computes the state resulting from applying a joint action to this state"""
         new_state = QuoridorState(
             copy.copy(self.agent_positions),
@@ -147,15 +147,15 @@ class QuoridorState:
         )
         return new_state
 
-    def is_applicable(self, action: actions.AnyAction) -> bool:
+    def is_applicable(self, action: "actions.AnyAction") -> bool:
         """Returns whether all individual actions in the joint_action is applicable in this state"""
         if not action.is_applicable(self.agent_to_move, self):
             return False
         return True
 
     def get_applicable_actions(
-        self, action_set: list[actions.AnyAction]
-    ) -> list[actions.AnyAction]:
+        self, action_set: list["actions.AnyAction"]
+    ) -> list["actions.AnyAction"]:
         """Returns a list of all applicable joint_action in this state"""
         # Determine all applicable actions for each individual agent, i.e. without consideration of conflicts.
         applicable_actions = []
@@ -164,14 +164,14 @@ class QuoridorState:
                 applicable_actions.append(action)
         return applicable_actions
 
-    def is_terminal(self):
+    def is_terminal(self)->bool:
         if self.agent_positions[0][0][1] == 8:
             return True
         if self.agent_positions[1][0][1] == 0:
             return True
         return False
 
-    def get_winner(self):
+    def get_winner(self)-> int|None:
         if self.agent_positions[0][0][1] == 8:
             return 1
         if self.agent_positions[1][0][1] == 0:
@@ -206,6 +206,8 @@ class QuoridorState:
             else:
                 board[(y + 1) * 2][(x + 1) * 2 - 1] = "#"
                 board[(y + 1) * 2][(x + 2) * 2 - 1] = "#"
+        # NOTE:::This seems a bit buggy based on types, a board is a list of lists and you are a
+        # appending a str to it. How does this work. Can you annotate the type of board where it is defined. 
         board.append(f"{self.agent_to_move}|({self.walls_left})")
         board = ["".join(linei) for linei in board]
         return "\n".join(board)
@@ -228,7 +230,7 @@ class QuoridorState:
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self)->int:
         """
         Allows the state to be stored in a hash table for efficient lookup.
         Notice that we here only hash the agent positions and box positions, but ignore all other fields.
@@ -237,7 +239,7 @@ class QuoridorState:
         return hash(
             (
                 tuple(self.agent_positions),
-                tuple(self.box_positions),
+                tuple(self.box_positions),  #NOTE:: No box_positions where is this defined
                 self.agent_to_move,
                 self.walls_left,
             )
@@ -266,5 +268,5 @@ for i in range(9):
     initial_graph.add_edge(-2, findVertice(initial_graph, (i, 0)))
 
 initial_state = QuoridorState(
-    [((4, 0), "1"), ((4, 8), "2")], [], 0, [10, 10], initial_graph
+    [((4, 0), "1"), ((4, 8), "2")], [], 0, (0, 10), initial_graph
 )

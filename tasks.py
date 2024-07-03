@@ -40,15 +40,10 @@ def format_code(context):
 @task(aliases=("pip", "deps"))
 def dependencies(context):
     """Install all requirements and development requirements"""
-    global toml
-    if toml is None:
-        context.run("python -m pip install toml")
-        import toml
     with context.cd(THIS_DIR):
         context.run("python -m pip install --upgrade pip")
-        data = toml.load(THIS_DIR / "pyproject.toml")
-        context.run(f"pip install {' '.join(data['project']['dependencies'])}")
-        context.run("pip install " f"{' '.join(data['project']['optional-dependencies']['dev'])}")
+        context.run("python -m pip install -r requirements.txt")
+        context.run("python -m pip install -r dev-requirements.txt")
 
 @task(aliases=["check", "c"])
 def checks(context):
